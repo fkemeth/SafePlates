@@ -91,7 +91,6 @@ graph_builder.add_edge("recipe_finalizer", END)
 # Create Gradio interface
 CSS = """
 .contain { display: flex; flex-direction: column; }
-.gradio-container { height: 100vh !important; }
 #component-0 { height: 100%; }
 #chatbot { flex-grow: 1; overflow: auto;}
 """
