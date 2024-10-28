@@ -88,9 +88,14 @@ graph_builder.add_conditional_edges(
 graph_builder.add_edge("human_feedback_handler", "recipe_finalizer")
 graph_builder.add_edge("recipe_finalizer", END)
 
-
 # Create Gradio interface
-with gr.Blocks() as demo:
+CSS = """
+.contain { display: flex; flex-direction: column; }
+.gradio-container { height: 100vh !important; }
+#component-0 { height: 100%; }
+#chatbot { flex-grow: 1; overflow: auto;}
+"""
+with gr.Blocks(css=CSS) as demo:
     memory = MemorySaver()
     graph = graph_builder.compile(
         checkpointer=memory,
@@ -98,7 +103,7 @@ with gr.Blocks() as demo:
     )
 
     gr.Markdown("""
-    # 🥞 SafePlates
+    # 🎂 SafePlates
     
     SafePlates: A smart recipe assistant that creates personalized meals while checking for allergens to ensure safe and delicious dining.
                 
@@ -111,10 +116,10 @@ with gr.Blocks() as demo:
     5. Provide you with a safe and delicious final recipe""")
     
     chatbot = gr.Chatbot(
-        height=600,
         show_copy_button=False,
         show_share_button=False,
-        label="Recipe Assistant"
+        label="Recipe Assistant",
+        elem_id="chatbot"
     )
     msg = gr.Textbox(
         placeholder="Enter your recipe request...",
@@ -173,10 +178,28 @@ with gr.Blocks() as demo:
         else:
             return None
 
-    example_button1.click(fn=load_example, inputs=[gr.Number(value=1, visible=False)], outputs=[msg])
-    example_button2.click(fn=load_example, inputs=[gr.Number(value=2, visible=False)], outputs=[msg])
-    example_button3.click(fn=load_example, inputs=[gr.Number(value=3, visible=False)], outputs=[msg])
+    example_button1.click(fn=load_example, inputs=[gr.Number(value=1, visible=False)], outputs=[msg]).then(
+        process_request,
+        inputs=[msg, chatbot, state, user_id],
+        outputs=[chatbot, state, user_id]
+    ).then(lambda: None, inputs=[], outputs=[msg])
+    example_button2.click(fn=load_example, inputs=[gr.Number(value=2, visible=False)], outputs=[msg]).then(
+        process_request,
+        inputs=[msg, chatbot, state, user_id],
+        outputs=[chatbot, state, user_id]
+    ).then(lambda: None, inputs=[], outputs=[msg])
+    example_button3.click(fn=load_example, inputs=[gr.Number(value=3, visible=False)], outputs=[msg]).then(
+        process_request,
+        inputs=[msg, chatbot, state, user_id],
+        outputs=[chatbot, state, user_id]
+    ).then(lambda: None, inputs=[], outputs=[msg])
 
     refresh_button = gr.Button("🔄 Refresh")
     refresh_button.click(fn=lambda: None, inputs=[], outputs=[chatbot, state, user_id], js="() => {window.location.reload()}")
+
+    gr.Markdown(
+        """
+        By using this application, you agree to OpenAI's [terms of service](https://openai.com/policies/terms-of-service) and [privacy policy](https://openai.com/policies/privacy-policy).
+        """
+    )
 demo.launch()
