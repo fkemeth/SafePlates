@@ -1,0 +1,4 @@
+gradio==5.4.0
+langgraph==0.2.39
+openai==1.52.2
+typing_extensions==4.12.2
