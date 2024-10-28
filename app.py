@@ -118,7 +118,8 @@ with gr.Blocks(css=CSS) as demo:
         show_copy_button=False,
         show_share_button=False,
         label="Recipe Assistant",
-        elem_id="chatbot"
+        elem_id="chatbot",
+        type="tuples"
     )
     msg = gr.Textbox(
         placeholder="Enter your recipe request...",
