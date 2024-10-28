@@ -55,7 +55,7 @@ def recipe_finalizer(state: State) -> State:
             model="gpt-4",
             messages=[{
                 "role": "user",
-                "content": f"Modify this recipe according to dietary restrictions: {state['recipe']}\nRestrictions: {state['human_feedback']}"
+                "content": f"Modify this recipe according to dietary restrictions: {state['recipe']}\nRestrictions: {state['human_feedback']}. Always return the full recipe, even if no changes are needed."
             }]
         )
         state["final_recipe"] = response.choices[0].message.content
@@ -94,7 +94,7 @@ CSS = """
 #component-0 { height: 100%; }
 #chatbot { flex-grow: 1; overflow: auto;}
 """
-with gr.Blocks(css=CSS) as demo:
+with gr.Blocks(css=CSS, title="🎂 SafePlates") as demo:
     memory = MemorySaver()
     graph = graph_builder.compile(
         checkpointer=memory,
@@ -142,7 +142,7 @@ with gr.Blocks(css=CSS) as demo:
             state["human_feedback"] = message
             graph.update_state(config=config, values=state)
             history.append((message, "Updating recipe..."))
-        yield history, state, user_id
+        yield history, state, user_id, None
 
         # Process through graph
         for event in graph.stream(None if "human_feedback" in state else state, config=config):
@@ -155,13 +155,14 @@ with gr.Blocks(css=CSS) as demo:
                         history.append((None, event["recipe_generator"]["recipe"]))
                 elif "recipe_finalizer" in event:
                     history.append((None, f"Here's your final recipe:\n\n{event['recipe_finalizer']['final_recipe']}"))
-            yield history, state, user_id
+            yield history, state, user_id, None
 
     msg.submit(
         process_request,
         inputs=[msg, chatbot, state, user_id],
-        outputs=[chatbot, state, user_id]
-    ).then(lambda: None, inputs=[], outputs=[msg])
+        outputs=[chatbot, state, user_id, msg],
+        show_progress="hidden"
+    )
 
     with gr.Row():
         example_button1 = gr.Button("Example 1: Lemon Cake")
@@ -178,28 +179,31 @@ with gr.Blocks(css=CSS) as demo:
         else:
             return None
 
-    example_button1.click(fn=load_example, inputs=[gr.Number(value=1, visible=False)], outputs=[msg]).then(
+    example_button1.click(fn=load_example, inputs=[gr.Number(value=1, visible=False)], outputs=[msg], show_progress="hidden").then(
         process_request,
         inputs=[msg, chatbot, state, user_id],
-        outputs=[chatbot, state, user_id]
-    ).then(lambda: None, inputs=[], outputs=[msg])
-    example_button2.click(fn=load_example, inputs=[gr.Number(value=2, visible=False)], outputs=[msg]).then(
+        outputs=[chatbot, state, user_id, msg],
+        show_progress="hidden"
+    )
+    example_button2.click(fn=load_example, inputs=[gr.Number(value=2, visible=False)], outputs=[msg], show_progress="hidden").then(
         process_request,
         inputs=[msg, chatbot, state, user_id],
-        outputs=[chatbot, state, user_id]
-    ).then(lambda: None, inputs=[], outputs=[msg])
-    example_button3.click(fn=load_example, inputs=[gr.Number(value=3, visible=False)], outputs=[msg]).then(
+        outputs=[chatbot, state, user_id, msg],
+        show_progress="hidden"
+    )
+    example_button3.click(fn=load_example, inputs=[gr.Number(value=3, visible=False)], outputs=[msg], show_progress="hidden").then(
         process_request,
         inputs=[msg, chatbot, state, user_id],
-        outputs=[chatbot, state, user_id]
-    ).then(lambda: None, inputs=[], outputs=[msg])
+        outputs=[chatbot, state, user_id, msg],
+        show_progress="hidden"
+    )
 
     refresh_button = gr.Button("🔄 Refresh")
     refresh_button.click(fn=lambda: None, inputs=[], outputs=[chatbot, state, user_id], js="() => {window.location.reload()}")
 
     gr.Markdown(
         """
-        By using this application, you agree to OpenAI's [terms of service](https://openai.com/policies/terms-of-service) and [privacy policy](https://openai.com/policies/privacy-policy).
+        By using this application, you agree to OpenAI's [terms of use](https://openai.com/policies/row-terms-of-use/) and [privacy policy](https://openai.com/policies/row-privacy-policy/).
         """
     )
 demo.launch()
