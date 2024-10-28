@@ -112,11 +112,14 @@ with gr.Blocks(css=CSS, title="🎂 SafePlates") as demo:
     2. Check for common allergens (nuts, dairy, gluten, shellfish, eggs)
     3. If allergens are detected, ask for your dietary restrictions
     4. Modify the recipe according to your needs
-    5. Provide you with a safe and delicious final recipe""")
+    5. Provide you with a safe and delicious final recipe
+                
+    🔗 Connect with me on [LinkedIn](https://www.linkedin.com/in/felixkemeth) and [X](https://x.com/fkemeth)
+    """)
     
     chatbot = gr.Chatbot(
         show_copy_button=False,
-        show_share_button=False,
+        show_share_button=True,
         label="Recipe Assistant",
         elem_id="chatbot",
         type="tuples"
